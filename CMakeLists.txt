@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(mcrecv)
+project(mcrx)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -8,4 +8,4 @@ set(SOURCE_FILES
         MulticastClient.cpp
         MulticastClient.h)
 
-add_executable(mcrecv ${SOURCE_FILES})
+add_executable(mcrx ${SOURCE_FILES})
