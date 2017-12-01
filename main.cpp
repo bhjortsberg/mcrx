@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 
 std::pair<std::string, uint16_t> handleArguments(int argc, char **pString);
+void usage(const std::string& appName);
 
 int main(int argc, char ** argv)
 {
@@ -24,9 +25,18 @@ int main(int argc, char ** argv)
     catch (const std::runtime_error &e)
     {
         std::cout << "Error: " << e.what() << "\n";
+        usage(argv[0]);
     }
 
     return 0;
+}
+
+void usage(const std::string& appName)
+{
+    std::string help;
+    help  = "\tUsage:\n";
+    help += "\t\t" + appName + " <multicast-ip> <port>\n";
+    std::cout << help << std::endl;
 }
 
 std::pair<std::string, uint16_t> handleArguments(int argc, char **pString) {
