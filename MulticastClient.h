@@ -5,20 +5,27 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <chrono>
+#include <functional>
+#include <map>
 
 class MulticastClient
 {
 public:
     MulticastClient();
-    MulticastClient(const std::string&);
     ~MulticastClient();
 
-    void join(const std::string & addr);
-    void leave(const std::string & addr);
-    void listen(uint16_t port);
+    void join(const std::string& addr, uint16_t port);
+    void listen(const std::function<void(int, const std::chrono::system_clock::time_point&, uint32_t)>& dataCallback);
+    void leave(int sock, const std::string & addr);
+
+    const std::string& getAddress(int sock);
 
 private:
-    int sock_fd;
     bool mJoined;
     std::string mAddr;
+
+    fd_set mReadSet;
+    std::map<int, std::string> mSockets;
 };
