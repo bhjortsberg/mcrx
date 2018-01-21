@@ -10,6 +10,8 @@
 #include <functional>
 #include <map>
 
+using TimePoint = std::chrono::system_clock::time_point;
+
 class MulticastClient
 {
 public:
@@ -17,15 +19,12 @@ public:
     ~MulticastClient();
 
     void join(const std::string& addr, uint16_t port);
-    void listen(const std::function<void(int, const std::chrono::system_clock::time_point&, uint32_t)>& dataCallback);
+    void listen(const std::function<void(int, const TimePoint&, uint32_t)>& dataCallback);
     void leave(int sock, const std::string & addr);
 
     const std::string& getAddress(int sock);
 
 private:
-    bool mJoined;
-    std::string mAddr;
-
     fd_set mReadSet;
     std::map<int, std::string> mSockets;
 };
