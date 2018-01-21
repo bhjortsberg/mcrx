@@ -9,8 +9,8 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <iomanip>
-#include <asm/ioctls.h>
-#include <stropts.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
 #include <cstring>
 #include "MulticastClient.h"
 
