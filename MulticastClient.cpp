@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <asm/ioctls.h>
 #include <stropts.h>
+#include <cstring>
 #include "MulticastClient.h"
 
 
@@ -71,8 +72,8 @@ void MulticastClient::join(const std::string &addr, uint16_t port)
     if (bind(sock, (struct sockaddr*)&ipAddr, sizeof(ipAddr)))
     {
         std::string error = "Bind error on port: " + std::to_string(port);
-        perror(error.c_str());
-        return;
+        error += " (" + std::string(strerror(errno)) + ")";
+        throw std::runtime_error(error);
     }
 
     FD_SET(sock, &mReadSet);

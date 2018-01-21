@@ -14,6 +14,15 @@ std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **p
 void usage(const std::string& appName);
 std::pair<float, char> unitize(uint32_t bytes);
 
+
+class InputError : public std::runtime_error
+{
+public:
+    InputError(const std::string& errorStr):
+            std::runtime_error(errorStr)
+    {}
+};
+
 int main(int argc, char ** argv)
 {
     MulticastClient mcClient;
@@ -44,14 +53,18 @@ int main(int argc, char ** argv)
 
         for (const auto& address : addresses)
         {
-            std::cout << "Listening on " << address.first << ":" << address.second << std::endl;
+            std::cout << address.first << ":" << address.second << std::setw(20)  << "...listening" << std::endl;
         }
         mcClient.listen(printout);
     }
-    catch (const std::runtime_error &e)
+    catch (const InputError &e)
     {
         std::cout << "Error: " << e.what() << "\n";
         usage(argv[0]);
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::cout << "Error: " << e.what() << "\n";
     }
 
     return 0;
@@ -94,7 +107,7 @@ std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **p
     std::vector<std::pair<std::string, uint16_t>> addressList;
     if (argc != 2)
     {
-        throw std::runtime_error("Wrong number of arguments");
+        throw InputError("Wrong number of arguments");
     }
 
     std::string addr;
@@ -117,7 +130,7 @@ std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **p
         {
             addr = mcNetAddrStr.substr(0, delimPos);
             if (inet_addr(addr.c_str()) == INADDR_NONE) {
-                throw std::runtime_error("Invalid address \"" + addr + "\"");
+                throw InputError("Invalid address \"" + addr + "\"");
             }
             addrFound = true;
             continue;
@@ -128,7 +141,7 @@ std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **p
         uint16_t port = std::strtol(portStr.c_str(), &endPtr, 10);
         if (*endPtr != '\0')
         {
-            throw std::runtime_error("Not a valid port: " + portStr);
+            throw InputError("Not a valid port: " + portStr);
         }
         addressList.emplace_back(addr, port);
     }
