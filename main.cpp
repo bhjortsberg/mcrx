@@ -85,7 +85,7 @@ void usage(const std::string& appName)
 {
     std::string help;
     help  = "\tUsage:\n";
-    help += "\t\t" + appName + " <multicast-ip> <port>\n";
+    help += "\t\t" + appName + " <multicast-ip>:<port1>[:<port2>:...<portN>]\n";
     std::cout << help << std::endl;
 }
 
