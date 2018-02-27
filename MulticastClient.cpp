@@ -48,9 +48,16 @@ void MulticastClient::join(const std::string &addr, uint16_t port)
     struct ip_mreq mreq;
     mreq.imr_multiaddr.s_addr = inet_addr(addr.c_str());
     mreq.imr_interface.s_addr = INADDR_ANY;
+
     if (!setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP | SO_REUSEADDR, &mreq, sizeof(mreq)))
     {
         std::cout << "Joined " << addr << std::endl;
+    }
+    else
+    {
+        throw std::runtime_error(std::string(strerror(errno)) +
+                                 " (setsockopt: " + addr + " " +
+                                 " - not a multicast address?)");
     }
 
     // Set non blocking socket
