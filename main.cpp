@@ -73,45 +73,46 @@ int main(int argc, char ** argv)
 std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **pString)
 {
     std::vector<std::pair<std::string, uint16_t>> addressList;
-    if (argc != 2)
+    if (argc < 2)
     {
         throw InputError("Wrong number of arguments");
     }
 
     std::string addr;
-    std::string mcNetAddrStr(pString[1]); // on the form 224.1.1.1:1234:1235
-    bool addrFound = false;
-    size_t delimPos = 0;
-    size_t oldPos = 0;
-    bool parsingDone = false;
+    std::string mcNetAddrStr;
 
-    while (not parsingDone)
+    for (int i = 1; i < argc; ++i)
     {
-        oldPos = delimPos;
-        delimPos = mcNetAddrStr.find(":", delimPos + 1);
-        if (delimPos == std::string::npos)
-        {
-            delimPos = mcNetAddrStr.size();
-            parsingDone = true;
-        }
-        if (not addrFound)
-        {
-            addr = mcNetAddrStr.substr(0, delimPos);
-            if (inet_addr(addr.c_str()) == INADDR_NONE) {
-                throw InputError("Invalid address \"" + addr + "\"");
-            }
-            addrFound = true;
-            continue;
-        }
+        mcNetAddrStr = pString[i];  // on the form 224.1.1.1:1234:1235
+        bool parseDone = false;
+        size_t delimPos = 0;
+        size_t oldPos = 0;
+        bool addrFound = false;
 
-        auto portStr = mcNetAddrStr.substr(oldPos + 1, delimPos - oldPos - 1);
-        char *endPtr;
-        uint16_t port = std::strtol(portStr.c_str(), &endPtr, 10);
-        if (*endPtr != '\0')
-        {
-            throw InputError("Not a valid port: " + portStr);
+        while (not parseDone) {
+            oldPos = delimPos;
+            delimPos = mcNetAddrStr.find(":", delimPos + 1);
+            if (delimPos == std::string::npos) {
+                delimPos = mcNetAddrStr.size();
+                parseDone = true;
+            }
+            if (not addrFound) {
+                addr = mcNetAddrStr.substr(0, delimPos);
+                if (inet_addr(addr.c_str()) == INADDR_NONE) {
+                    throw InputError("Invalid address \"" + addr + "\"");
+                }
+                addrFound = true;
+                continue;
+            }
+
+            auto portStr = mcNetAddrStr.substr(oldPos + 1, delimPos - oldPos - 1);
+            char *endPtr;
+            uint16_t port = std::strtol(portStr.c_str(), &endPtr, 10);
+            if (*endPtr != '\0') {
+                throw InputError("Not a valid port: " + portStr);
+            }
+            addressList.emplace_back(addr, port);
         }
-        addressList.emplace_back(addr, port);
     }
 
     return addressList;
@@ -131,7 +132,6 @@ std::map<std::string, uint32_t> joinAll(const std::vector<std::pair<std::string,
         addressIndexMap.emplace(address.first + ":" + std::to_string(address.second), idx);
         ++idx;
     }
-
     return addressIndexMap;
 }
 
@@ -163,6 +163,8 @@ void usage(const std::string& appName)
 {
     std::string help;
     help  = "\tUsage:\n";
-    help += "\t\t" + appName + " <multicast-ip>:<port1>[:<port2>:...<portN>]\n";
+    help += "\t\t" + appName + " <multicast-ip>:<port1>[:<port2>:...<portN>] [<multicast-ip>:<port1>[:<port2>:...<portN>]]\n";
+    help += "\n\tExample:\n";
+    help += "\t\t " + appName + " 224.1.1.1:1234:1235 224.1.1.2:1234\n";
     std::cout << help << std::endl;
 }
