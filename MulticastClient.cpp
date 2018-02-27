@@ -68,7 +68,7 @@ void MulticastClient::join(const std::string &addr, uint16_t port)
     struct sockaddr_in ipAddr;
     ipAddr.sin_port = htons(port);
     ipAddr.sin_family = AF_INET;
-    ipAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    ipAddr.sin_addr.s_addr = inet_addr(addr.c_str());
 
     if (bind(sock, (struct sockaddr*)&ipAddr, sizeof(ipAddr)))
     {
