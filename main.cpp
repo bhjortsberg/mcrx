@@ -24,6 +24,14 @@ public:
     {}
 };
 
+class MulticastData // TODO: Rename to e.g. MulticastSourceData
+{
+public:
+    uint64_t totalBytes = 0;
+    uint64_t reportedBytes = 0;
+    TimePoint reportTime = std::chrono::system_clock::now();
+    uint64_t rate;
+};
 
 int main(int argc, char ** argv)
 {
@@ -39,19 +47,32 @@ int main(int argc, char ** argv)
             std::cout << address.first << ":" << address.second << std::setw(20)  << "...listening" << std::endl;
         }
 
-        std::map<int, uint64_t> totalBytes;
-        auto printout = [&mcClient, &totalBytes, &addressIndexMap](int sock,
-                                                                   const TimePoint& time,
-                                                                   uint32_t bytes) {
-            totalBytes[sock] += bytes;
-            auto [t, s] = unitize(totalBytes[sock]);
+        std::map<int, MulticastData> multicastData;
+
+        auto printout = [&mcClient, &addressIndexMap, &multicastData](int sock,
+                                                      const TimePoint& time,
+                                                      uint32_t bytes) {
+            auto totalBytes = multicastData[sock].totalBytes + bytes;
+            auto [t, s] = unitize(multicastData[sock].totalBytes);
 
             const std::string addrStr = mcClient.getAddress(sock);
             uint32_t cursorPos = addressIndexMap.size() - addressIndexMap.at(addrStr);
 
+            auto previousTime = multicastData[sock].reportTime;
+            if (time > previousTime + std::chrono::seconds(1))
+            {
+                auto currentRate = (totalBytes - multicastData[sock].reportedBytes) /
+                        std::chrono::duration_cast<std::chrono::seconds>(time - previousTime).count();
+                multicastData[sock].rate = currentRate;
+                multicastData[sock].reportedBytes = multicastData[sock].totalBytes;
+                multicastData[sock].reportTime = time;
+            }
+            multicastData[sock].totalBytes = totalBytes;
+            auto [b, u] = unitize(multicastData[sock].rate);
+
             std::cout << "\x1b[" + std::to_string(cursorPos) + "A";
             std::cout << "\r" << addrStr << std::setw(20) << std::setprecision(5)
-                      << t << " " << s << "Bytes" << std::flush;
+                      << t << " " << s << "Bytes" << "\t" << b << " " << u <<"Bytes/s" << std::flush;
             std::cout << "\x1b[" + std::to_string(cursorPos) + "B";
         };
 
