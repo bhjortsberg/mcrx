@@ -24,7 +24,7 @@ public:
     {}
 };
 
-class MulticastData // TODO: Rename to e.g. MulticastSourceData
+class MulticastStatistics
 {
 public:
     uint64_t totalBytes = 0;
@@ -47,16 +47,12 @@ int main(int argc, char ** argv)
             std::cout << address.first << ":" << address.second << std::setw(20)  << "...listening" << std::endl;
         }
 
-        std::map<int, MulticastData> multicastData;
+        std::map<int, MulticastStatistics> multicastData;
 
         auto printout = [&mcClient, &addressIndexMap, &multicastData](int sock,
                                                       const TimePoint& time,
                                                       uint32_t bytes) {
             auto totalBytes = multicastData[sock].totalBytes + bytes;
-            auto [t, s] = unitize(multicastData[sock].totalBytes);
-
-            const std::string addrStr = mcClient.getAddress(sock);
-            uint32_t cursorPos = addressIndexMap.size() - addressIndexMap.at(addrStr);
 
             auto previousTime = multicastData[sock].reportTime;
             if (time > previousTime + std::chrono::seconds(1))
@@ -69,6 +65,11 @@ int main(int argc, char ** argv)
             }
             multicastData[sock].totalBytes = totalBytes;
             auto [b, u] = unitize(multicastData[sock].rate);
+
+            auto [t, s] = unitize(multicastData[sock].totalBytes);
+
+            const std::string addrStr = mcClient.getAddress(sock);
+            uint32_t cursorPos = addressIndexMap.size() - addressIndexMap.at(addrStr);
 
             std::cout << "\x1b[" + std::to_string(cursorPos) + "A";
             std::cout << "\r" << addrStr << std::setw(20) << std::setprecision(5)
