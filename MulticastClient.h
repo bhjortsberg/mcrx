@@ -21,10 +21,12 @@ public:
     void join(const std::string& addr, uint16_t port);
     void listen(const std::function<void(int, const TimePoint&, uint32_t)>& dataCallback);
     void leave(int sock, const std::string & addr);
+    void stop();
 
     const std::string& getAddress(int sock);
 
 private:
     fd_set mReadSet;
     std::map<int, std::string> mSockets;
+    bool mRun = true;
 };

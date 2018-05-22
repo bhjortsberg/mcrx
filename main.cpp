@@ -8,6 +8,7 @@
 
 #include <arpa/inet.h>
 #include <iomanip>
+#include <csignal>
 
 std::vector<std::pair<std::string, uint16_t>> handleArguments(int argc, char **pString);
 std::map<std::string, uint32_t> joinAll(const std::vector<std::pair<std::string, uint16_t>>& addresses,
@@ -30,17 +31,47 @@ public:
     uint64_t totalBytes = 0;
     uint64_t reportedBytes = 0;
     TimePoint reportTime = std::chrono::system_clock::now();
-    uint64_t rate;
+    uint64_t rate = 0;
 };
+
+
+
+void hideCursor()
+{
+    std::cout << "\x1b[?25l";
+}
+
+void showCursor()
+{
+    std::cout << "\x1b[?25h";
+}
+
+namespace {
+std::function<void(int)> handleSigint;
+void sigintHandler(int sig)
+{
+    handleSigint(sig);
+}
+}
+
 
 int main(int argc, char ** argv)
 {
     MulticastClient mcClient;
 
+    handleSigint = [&mcClient](int sig)
+    {
+        mcClient.stop();
+        showCursor();
+    };
+    std::signal(SIGINT, sigintHandler);
+
     try
     {
         auto addresses = handleArguments(argc, argv);
         auto addressIndexMap = joinAll(addresses, mcClient);
+
+        hideCursor();
 
         for (const auto& address : addresses)
         {
@@ -89,6 +120,7 @@ int main(int argc, char ** argv)
         std::cout << "Error: " << e.what() << "\n";
     }
 
+    std::cout << "\n";
     return 0;
 }
 
