@@ -41,6 +41,10 @@ void MulticastClient::leave(int sock, const std::string & addr)
     }
 }
 
+void MulticastClient::stop()
+{
+    mRun = false;
+}
 
 void MulticastClient::join(const std::string &addr, uint16_t port)
 {
@@ -92,7 +96,7 @@ void MulticastClient::listen(const std::function<void(int, const TimePoint&, uin
     fd_set testset;
     int result;
 
-    while (true)
+    while (mRun)
     {
         testset = mReadSet;
         result = select(FD_SETSIZE, &testset, NULL, NULL, NULL);
