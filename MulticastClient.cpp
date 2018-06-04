@@ -41,6 +41,15 @@ void MulticastClient::leave(int sock, const std::string & addr)
     }
 }
 
+void MulticastClient::leaveAll()
+{
+    for (auto& [s,a] : mSockets)
+    {
+        auto del = a.find(":");
+        leave(s,a.substr(0, del));
+    }
+}
+
 void MulticastClient::stop()
 {
     mRun = false;

@@ -63,6 +63,7 @@ int main(int argc, char ** argv)
     {
         mcClient.stop();
         showCursor();
+        mcClient.leaveAll();
     };
     std::signal(SIGINT, sigintHandler);
 

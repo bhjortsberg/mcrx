@@ -21,6 +21,7 @@ public:
     void join(const std::string& addr, uint16_t port);
     void listen(const std::function<void(int, const TimePoint&, uint32_t)>& dataCallback);
     void leave(int sock, const std::string & addr);
+    void leaveAll();
     void stop();
 
     const std::string& getAddress(int sock);
